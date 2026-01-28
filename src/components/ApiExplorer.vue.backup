@@ -1,24 +1,11 @@
 <template>
   <div class="api-explorer fixed inset-0 z-10 pointer-events-none flex flex-col font-sans text-white">
     
-    <!-- 右上角：System Commands 重置按钮 -->
-    <div class="pointer-events-auto absolute top-4 right-4 flex items-center gap-2 z-20">
-      <select v-model="selectedFactory" 
-              class="bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm outline-none focus:border-blue-500 hover:bg-slate-700 transition-colors cursor-pointer">
-        <option value="All">All Factories</option>
-        <option v-for="factory in factoryList" :key="factory" :value="factory">{{ factory }}</option>
-      </select>
-      <button @click="resetFactory" 
-              class="bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded font-medium shadow-lg transition-all active:scale-95 flex items-center gap-2 text-sm">
-        <RefreshCwIcon class="w-4 h-4" /> Reset
-      </button>
-    </div>
-
-    <!-- 主体区域 -->
-    <div class="flex-1 flex overflow-hidden">
+    <!-- 主体区域：左侧导航 + 右侧详情 -->
+    <div class="flex-1 flex overflow-hidden pointer-events-auto">
       
-      <!-- 左侧：功能导航 -->
-      <div class="pointer-events-auto w-64 bg-slate-900/95 border-r border-slate-700 flex flex-col shadow-xl transition-transform duration-300"
+      <!-- 左侧：功能导航 (固定宽度) -->
+      <div class="w-64 bg-slate-900/95 border-r border-slate-700 flex flex-col shadow-xl transition-transform duration-300"
            :class="{ '-translate-x-full': !isOpen }">
         
         <!-- 标题栏 -->
@@ -30,20 +17,20 @@
         <!-- 命令树 -->
         <div class="flex-1 overflow-y-auto custom-scrollbar">
           <div v-for="(group, gKey) in apiSchema" :key="gKey">
-            
-            <!-- 分组标题 (点击可折叠) -->
+            <!-- 分组标题 (可点击折叠) -->
             <div 
               @click="toggleGroup(String(gKey))"
               class="px-4 py-3 text-xs font-bold text-gray-400 uppercase bg-slate-950/80 mt-1 first:mt-0 cursor-pointer flex items-center justify-between hover:bg-slate-900 hover:text-gray-200 transition-colors select-none"
             >
               {{ group.title }}
+              <!-- 箭头指示器 -->
               <ChevronDownIcon 
                 class="w-3 h-3 transition-transform duration-200"
                 :class="{ '-rotate-90': !expandedGroups.includes(String(gKey)) }"
               />
             </div>
             
-            <!-- 命令列表 -->
+            <!-- 命令列表 (带折叠逻辑) -->
             <div v-show="expandedGroups.includes(String(gKey))" class="bg-slate-900/30">
               <div v-for="(cmd, cIdx) in group.commands" :key="cIdx">
                 <button 
@@ -56,18 +43,17 @@
                 </button>
               </div>
             </div>
-
           </div>
         </div>
       </div>
 
-      <!-- 打开侧边栏按钮 -->
-      <button v-if="!isOpen" @click="isOpen = true" class="pointer-events-auto absolute top-4 left-4 p-2 bg-slate-800 border border-slate-600 rounded shadow hover:bg-slate-700">
+      <!-- 打开按钮 (当侧边栏关闭时显示) -->
+      <button v-if="!isOpen" @click="isOpen = true" class="absolute top-4 left-4 p-2 bg-slate-800 border border-slate-600 rounded shadow hover:bg-slate-700 pointer-events-auto">
         <MenuIcon class="w-5 h-5" />
       </button>
 
-      <!-- 右侧：详情面板 -->
-      <div v-if="selectedCmd && isOpen" class="pointer-events-auto w-80 bg-slate-900/90 backdrop-blur-md border-r border-slate-700 flex flex-col shadow-2xl animate-slide-in">
+      <!-- 右侧：详情面板 (仅当选中命令时显示) -->
+      <div v-if="selectedCmd && isOpen" class="w-80 bg-slate-900/90 backdrop-blur-md border-r border-slate-700 flex flex-col shadow-2xl animate-slide-in">
         <!-- 详情头 -->
         <div class="h-12 px-4 border-b border-slate-700 flex items-center bg-slate-800/80">
           <h3 class="font-bold truncate" :title="selectedCmd.name">{{ selectedCmd.name }}</h3>
@@ -88,7 +74,7 @@
                 <span v-if="param.unit" class="text-[10px] text-gray-500 bg-slate-800 px-1 rounded">{{ param.unit }}</span>
               </div>
 
-              <!-- Vector3 输入框 -->
+              <!-- Vector3 -->
               <div v-if="param.type === 'vector3'" class="flex gap-2">
                 <div v-for="(axis, i) in ['X','Y','Z']" :key="i" class="relative flex-1">
                   <span class="absolute left-1.5 top-1.5 text-[10px] text-gray-600 select-none">{{axis}}</span>
@@ -97,20 +83,20 @@
                 </div>
               </div>
 
-              <!-- JSON 输入框 -->
+              <!-- JSON -->
               <div v-else-if="param.type === 'json'" class="relative">
                 <textarea v-model="currentFormData[param.key]" rows="4" 
                           class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-[10px] font-mono text-green-400 outline-none resize-y"></textarea>
                 <button @click="formatJson(param.key)" class="absolute bottom-1 right-1 text-[10px] text-gray-500 hover:text-white bg-slate-800 px-1 rounded">Format</button>
               </div>
 
-              <!-- Select 下拉框 -->
+              <!-- Select -->
               <select v-else-if="param.type === 'select'" v-model="currentFormData[param.key]"
                       class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs outline-none focus:border-blue-500">
                 <option v-for="opt in param.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
               </select>
 
-              <!-- 普通 Input -->
+              <!-- Default Input -->
               <input v-else :type="param.type === 'float' || param.type === 'integer' ? 'number' : 'text'" 
                      v-model="currentFormData[param.key]"
                      class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs outline-none focus:border-blue-500" />
@@ -119,7 +105,7 @@
           <div v-else class="text-center text-gray-500 py-8 text-sm">此命令无需参数</div>
         </div>
 
-        <!-- 底部发送按钮 -->
+        <!-- 底部发送按钮 (Fixed at bottom of panel) -->
         <div class="p-4 border-t border-slate-700 bg-slate-800/50">
           <button @click="executeCommand" 
                   class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
@@ -129,7 +115,7 @@
       </div>
     </div>
 
-    <!-- 底部日志面板 -->
+    <!-- 底部日志面板 (可折叠) -->
     <div class="pointer-events-auto bg-slate-900 border-t border-slate-700 flex flex-col transition-all duration-300 shadow-[0_-5px_15px_rgba(0,0,0,0.5)]"
          :style="{ height: isLogOpen ? '200px' : '32px' }">
       
@@ -152,25 +138,13 @@
       <!-- 日志内容 -->
       <div ref="logContainer" class="flex-1 overflow-y-auto p-2 space-y-1 font-mono text-xs bg-black/50 custom-scrollbar">
         <div v-if="logs.length === 0" class="text-gray-600 text-center mt-4">暂无通信记录</div>
-        
-        <!-- 日志行：增加 relative 和 pr-8 为复制按钮留空间 -->
-        <div v-for="(log, i) in logs" :key="i" class="relative flex gap-2 group hover:bg-white/5 p-1 rounded pr-8">
-          <span class="text-gray-500 shrink-0 select-none">[{{ log.time }}]</span>
-          <span class="font-bold shrink-0 select-none" 
+        <div v-for="(log, i) in logs" :key="i" class="flex gap-2 group hover:bg-white/5 p-0.5 rounded">
+          <span class="text-gray-500 shrink-0">[{{ log.time }}]</span>
+          <span class="font-bold shrink-0" 
                 :class="log.type === 'TX' ? 'text-blue-400' : 'text-green-400'">
             {{ log.type === 'TX' ? '→ SENT' : '← RECV' }}
           </span>
-          <!-- 增加 select-text 确保可选中，font-mono 方便看代码 -->
-          <span class="text-gray-300 break-all whitespace-pre-wrap select-text font-mono">{{ log.msg }}</span>
-          
-          <!-- 复制按钮：Group Hover 时显示 -->
-          <button 
-            @click="copyLog(log.msg)" 
-            class="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-slate-700/80 hover:bg-blue-600 rounded text-white shadow-sm"
-            title="复制内容"
-          >
-            <CopyIcon class="w-3 h-3" />
-          </button>
+          <span class="text-gray-300 break-all whitespace-pre-wrap">{{ log.msg }}</span>
         </div>
       </div>
     </div>
@@ -179,9 +153,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue';
-// 引入 CopyIcon 和 RefreshCwIcon
-import { MenuIcon, XIcon, ChevronRightIcon, ChevronUpIcon, ChevronDownIcon, SendIcon, Trash2Icon, TerminalIcon, CopyIcon, RefreshCwIcon } from 'lucide-vue-next';
+import { ref, reactive, onMounted, nextTick, watch } from 'vue';
+import { MenuIcon, XIcon, ChevronRightIcon, ChevronUpIcon, ChevronDownIcon, SendIcon, Trash2Icon, TerminalIcon } from 'lucide-vue-next';
 import { apiSchema, type CommandDef } from '../config/apiSchema';
 import { sendToUe, registerUEResponse } from '../utils/ue';
 
@@ -191,55 +164,35 @@ const isLogOpen = ref(true);
 const selectedCmd = ref<CommandDef | null>(null);
 const currentFormData = reactive<Record<string, any>>({});
 const logContainer = ref<HTMLElement>();
-const expandedGroups = ref<string[]>(Object.keys(apiSchema));
 
-// System Reset
-const selectedFactory = ref('All');
-// 动态获取所有 Factory 名称 (排除 System)
-const factoryList = Object.keys(apiSchema).filter(k => k !== 'System');
+// 默认展开所有分组
+const expandedGroups = ref<string[]>(Object.keys(apiSchema));
 
 interface LogEntry { type: 'TX' | 'RX'; time: string; msg: string; }
 const logs = ref<LogEntry[]>([]);
 
-// 复制日志功能 (兼容 HTTP)
-const copyLog = (text: string) => {
-  // 优先尝试现代 API
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).catch(err => console.error('Copy failed:', err));
-  } else {
-    // 兼容 HTTP 环境的 Fallback
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.position = "fixed";
-    textArea.style.left = "-9999px";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    try {
-      document.execCommand('copy');
-    } catch (err) {
-      console.error('Copy fallback failed', err);
-    }
-    document.body.removeChild(textArea);
-  }
-};
-
+// 切换分组折叠状态
 const toggleGroup = (key: string) => {
   const idx = expandedGroups.value.indexOf(key);
   if (idx > -1) expandedGroups.value.splice(idx, 1);
   else expandedGroups.value.push(key);
 };
 
+// 选中命令时，初始化它的表单数据
 const selectCommand = (cmd: CommandDef) => {
   selectedCmd.value = cmd;
+  // 重置表单数据
   Object.keys(currentFormData).forEach(key => delete currentFormData[key]);
+  
   if (cmd.params) {
     cmd.params.forEach(p => {
+      // 深度拷贝默认值
       currentFormData[p.key] = p.default !== undefined ? JSON.parse(JSON.stringify(p.default)) : null;
     });
   }
 };
 
+// 格式化 JSON
 const formatJson = (key: string) => {
   try {
     const val = currentFormData[key];
@@ -248,11 +201,14 @@ const formatJson = (key: string) => {
   } catch { alert('JSON 格式无效'); }
 };
 
+// 执行发送
 const executeCommand = () => {
   if (!selectedCmd.value) return;
+
   const payload: any = {};
   selectedCmd.value.params?.forEach(p => {
     let val = currentFormData[p.key];
+    // 类型转换处理
     if (p.type === 'json' && typeof val === 'string') {
       try { val = JSON.parse(val); } catch { return; }
     }
@@ -260,34 +216,31 @@ const executeCommand = () => {
     if (p.type === 'integer') val = parseInt(val);
     payload[p.key] = val;
   });
+
+  // 1. 发送
   sendToUe(selectedCmd.value.cmd, payload);
+  // 2. 记日志
   addLog('TX', `${selectedCmd.value.cmd} ${JSON.stringify(payload)}`);
 };
 
+// 添加日志
 const addLog = (type: 'TX' | 'RX', msg: string | object) => {
   const msgStr = typeof msg === 'object' ? JSON.stringify(msg) : String(msg);
   logs.value.push({
     type,
-    time: new Date().toLocaleTimeString('en-GB', { hour12: false }),
+    time: new Date().toLocaleTimeString('en-GB', { hour12: false }), // HH:mm:ss
     msg: msgStr
   });
+  
+  // 自动滚动到底部
   nextTick(() => {
     if (logContainer.value) logContainer.value.scrollTop = logContainer.value.scrollHeight;
   });
 };
 
-// System Commands - 重置 Factory
-const resetFactory = () => {
-  if (selectedFactory.value === 'All') {
-    sendToUe('/System/ResetAll', {});
-    addLog('TX', '/System/ResetAll {}');
-  } else {
-    sendToUe('/System/ResetFactory', { factoryName: selectedFactory.value });
-    addLog('TX', `/System/ResetFactory {"factoryName": "${selectedFactory.value}"}`);
-  }
-};
-
+// 初始化
 onMounted(() => {
+  // 注册 UE 回传监听
   registerUEResponse((data) => {
     addLog('RX', data);
   });
