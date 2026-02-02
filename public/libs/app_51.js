@@ -85,7 +85,7 @@ let qualityControlOwnershipCheckBox = {
     disabled: true,
     checked: true,
 };
-let matchViewportResolution = false;
+let matchViewportResolution = true;
 let VideoEncoderQP = "N/A";
 // TODO: Remove this - workaround because of bug causing UE to crash when switching resolutions too quickly
 let lastTimeResized = new Date().getTime();

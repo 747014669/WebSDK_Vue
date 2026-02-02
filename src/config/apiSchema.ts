@@ -38,9 +38,9 @@ export const apiSchema: Record<string, ManagerDef> = {
         name: "设置相机综合状态",
         desc: "同时设置位置和旋转",
         params: [
-          { key: "newLocation", label: "目标位置", type: "vector3", default: [0, 0, 0], unit: "米", desc: "必填：目标世界坐标" },
-          { key: "NewRotation", label: "目标旋转", type: "vector3", default: [0, 0, 0], unit: "度", desc: "可选：目标旋转[pitch,yaw,roll]" },
-          { key: "Zoom", label: "距离", type: "float", default: 50, unit: "米", desc: "可选：目标点到相机的距离，范围1-10000" },
+          { key: "newLocation", label: "目标位置", type: "vector3", default: [0.9721862123144714,424.43107679053503,371.7628626505302], unit: "米", desc: "必填：目标世界坐标" },
+          { key: "NewRotation", label: "目标旋转", type: "vector3", default: [-22.218017202593682,-159.68495872009152,0], unit: "度", desc: "可选：目标旋转[pitch,yaw,roll]" },
+          { key: "Zoom", label: "距离", type: "float", default: 0, unit: "米", desc: "可选：目标点到相机的距离，范围1-10000" },
           { key: "duration", label: "过渡时间", type: "float", default: 1.25, unit: "秒", desc: "可选：过渡动画时长，推荐0-60" }
         ]
       },
@@ -48,7 +48,7 @@ export const apiSchema: Record<string, ManagerDef> = {
         cmd: "/cameraManager/setDesiredLocation",
         name: "设置相机位置",
         params: [
-          { key: "Location", label: "目标位置", type: "vector3", default: [0, 0, 0], unit: "米", desc: "必填：目标世界坐标" },
+          { key: "Location", label: "目标位置", type: "vector3", default: [0.9721862123144714,424.43107679053503,371.7628626505302], unit: "米", desc: "必填：目标世界坐标" },
           { key: "Zoom", label: "距离", type: "float", default: 50, unit: "米", desc: "可选：目标点到相机的距离，范围1-10000" },
           { key: "duration", label: "过渡时间", type: "float", default: 0.75, unit: "秒", desc: "可选：过渡动画时长" }
         ]
@@ -83,8 +83,8 @@ export const apiSchema: Record<string, ManagerDef> = {
         cmd: "/cameraManager/splitScreen",
         name: "启用分屏对比",
         params: [
-          { key: "Tag1", label: "主屏标签", type: "string", default: "PlanA", desc: "必填：主屏幕（左侧）中可见Actor的标签" },
-          { key: "Tag2", label: "分屏标签", type: "string", default: "PlanB", desc: "必填：分屏（右侧）中可见Actor的标签" }
+          { key: "Tag1", label: "主屏标签", type: "string", default: "D302469673D9189E21AD1B6626C61BD9", desc: "必填：主屏幕（左侧）中可见Actor的标签" },
+          { key: "Tag2", label: "分屏标签", type: "string", default: "F5D482FA18AB6E6579528AF9E500E14D", desc: "必填：分屏（右侧）中可见Actor的标签" }
         ]
       },
       {
@@ -96,8 +96,8 @@ export const apiSchema: Record<string, ManagerDef> = {
         cmd: "/cameraManager/startCameraRoaming",
         name: "开始相机漫游",
         params: [
-          { key: "waypoints", label: "路径点", type: "json", default: [[0,0,0], [100,0,0]], desc: "必填：漫游路径点数组，至少2个点" },
-          { key: "rotations", label: "旋转", type: "json", default: [[0,0,0], [0,0,0]], desc: "必填：与路径点对应的旋转数组" },
+          { key: "waypoints", label: "路径点", type: "json", default: [[60.71,597.2,607.75], [113.55,367.21,610.48], [67.4,37.56,602.27], [71.72,-149.95,702.25], [-354.55,-208.8,577.23], [-655.85,225.21,522.09]], desc: "必填：漫游路径点数组，至少2个点" },
+          { key: "rotations", label: "旋转", type: "json", default: [[-45.08,-156.38,0.0], [-45.62,-171.86,0.0], [-44.11,140.98,0.0], [-43.67,121.15,0.0], [-39.63,70.36,-0.00], [-41.99,-7.71,-0.0]], desc: "必填：与路径点对应的旋转数组" },
           { key: "segmentDurations", label: "分段时长", type: "json", default: [], desc: "可选：每个分段的持续时间数组，与totalDuration二选一" },
           { key: "totalDuration", label: "总时长", type: "float", default: 10, unit: "秒", desc: "可选：整个漫游的总时长，与segmentDurations二选一" }
         ]
@@ -142,7 +142,8 @@ export const apiSchema: Record<string, ManagerDef> = {
         params: [
           { key: "FOV", label: "视场角", type: "float", default: 90, unit: "度", desc: "可选：视场角，范围30-120" },
           { key: "Resolution", label: "分辨率", type: "integer", default: 1024, desc: "可选：渲染目标分辨率，范围256-2048" },
-          { key: "DepthBias", label: "深度偏移", type: "float", default: 20, unit: "厘米", desc: "可选：深度偏移，用于避免Z-fighting" }
+          { key: "DepthBias", label: "深度偏移", type: "float", default: 20, unit: "厘米", desc: "可选：深度偏移，用于避免Z-fighting" },
+          { key: "HeightOffset", label: "观察高度", type: "float", default: 1.6, unit: "米", desc: "可选：点击点的高度偏移" },
         ]
       },
       { cmd: "/analysisTool/deactivateViewshed", name: "取消可视域", params: [] },
@@ -166,8 +167,8 @@ export const apiSchema: Record<string, ManagerDef> = {
             desc: "可选：分析类型"
           },
           { key: "Resolution", label: "分辨率", type: "integer", default: 512, desc: "可选：采样分辨率，范围64-2048" },
-          { key: "ContourSettings", label: "等高线设置", type: "json", default: {}, desc: "可选：等高线配置（当AnalysisType=Contour时有效）" },
-          { key: "SlopeAspectSettings", label: "坡度坡向设置", type: "json", default: {}, desc: "可选：坡度坡向配置（当AnalysisType=SlopeAspect时有效）" }
+          { key: "ContourSettings", label: "等高线设置", type: "json", default: {"Interval": 5.0,"MajorInterval": 5,"ShowLabels": true}, desc: "可选：等高线配置（当AnalysisType=Contour时有效）" },
+          { key: "SlopeAspectSettings", label: "坡度坡向设置", type: "json", default: {"SlopeOpacity": 0.7,"ShowAspectArrows": true,"ArrowSpacing": 50.0,"FlatThreshold": 2.0}, desc: "可选：坡度坡向配置（当AnalysisType=SlopeAspect时有效）" }
         ]
       },
       { cmd: "/analysisTool/deactivateTerrainAnalysis", name: "取消地形分析", params: [] },
@@ -184,14 +185,14 @@ export const apiSchema: Record<string, ManagerDef> = {
         cmd: "/gls/ShowModelByTags",
         name: "根据Tag显隐模型",
         params: [
-          { key: "Tags", label: "标签配置", type: "json", default: [{"Tag": "Building_A", "Show": true}], desc: "必填：Tag配置数组，每项包含Tag和Show字段" }
+          { key: "Tags", label: "标签配置", type: "json", default: [{"Tag": "D302469673D9189E21AD1B6626C61BD9", "Show": true}], desc: "必填：Tag配置数组，每项包含Tag和Show字段" }
         ]
       },
       {
         cmd: "/gls/ShowModelChildrenByTag",
         name: "显隐模型及子对象",
         params: [
-          { key: "Tags", label: "标签配置", type: "json", default: [{"Tag": "ParentActor", "Show": true}], desc: "必填：Tag配置数组" }
+          { key: "Tags", label: "标签配置", type: "json", default: [{"Tag": "888FC56BE06AACEBB930455DC8DEC0D0", "Show": true}], desc: "必填：Tag配置数组" }
         ]
       },
       {
@@ -241,7 +242,7 @@ export const apiSchema: Record<string, ManagerDef> = {
         cmd: "/gls/PlaySequence",
         name: "播放序列",
         params: [
-          { key: "Sequence", label: "序列路径", type: "string", default: "", desc: "可选：序列资源路径" },
+          { key: "Sequence", label: "序列路径", type: "string", default: "/Game/environment/KCDH_lSequence", desc: "序列资源路径" },
           { key: "State", label: "状态", type: "select", default: "play",
             options: [
               { label: "播放", value: "play" },
@@ -259,17 +260,17 @@ export const apiSchema: Record<string, ManagerDef> = {
         cmd: "/gls/GetPropertyById",
         name: "获取属性(ID)",
         params: [
-          { key: "Id", label: "Actor标识", type: "string", default: "Building_001", desc: "必填：Actor的Tag标识" },
-          { key: "Property", label: "属性名", type: "string", default: "ActorLocation", desc: "必填：属性名称" }
+          { key: "Id", label: "Actor标识", type: "string", default: "D302469673D9189E21AD1B6626C61BD9", desc: "必填：Actor的Tag标识" },
+          { key: "Property", label: "属性名", type: "string", default: "bHidden", desc: "必填：属性名称" }
         ]
       },
       {
         cmd: "/gls/SetPropertyById",
         name: "设置属性(ID)",
         params: [
-          { key: "Id", label: "Actor标识", type: "string", default: "Building_001", desc: "必填：Actor的Tag标识" },
-          { key: "Property", label: "属性名", type: "string", default: "ActorLocation", desc: "必填：属性名称" },
-          { key: "PropertyValue", label: "属性值", type: "json", default: {"X": 0, "Y": 0, "Z": 0}, desc: "必填：属性值" }
+          { key: "Id", label: "Actor标识", type: "string", default: "D302469673D9189E21AD1B6626C61BD9", desc: "必填：Actor的Tag标识" },
+          { key: "Property", label: "属性名", type: "string", default: "bHidden", desc: "必填：属性名称" },
+          { key: "PropertyValue", label: "属性值", type: "json", default: true, desc: "必填：属性值" }
         ]
       },
       {
@@ -670,7 +671,7 @@ export const apiSchema: Record<string, ManagerDef> = {
         name: "预加载图片",
         params: [
           { key: "images", label: "图片配置", type: "json", 
-            default: [{"image_1": "https://example.com/image1.png"}],
+            default: [{"image_1": "https://th.bing.com/th/id/R.987f582c510be58755c4933cda68d525?rik=C0D21hJDYvXosw&riu=http%3a%2f%2fimg.pconline.com.cn%2fimages%2fupload%2fupc%2ftx%2fwallpaper%2f1305%2f16%2fc4%2f20990657_1368686545122.jpg&ehk=netN2qzcCVS4ALUQfDOwxAwFcy41oxC%2b0xTFvOYy5ds%3d&risl=&pid=ImgRaw&r=0"}],
             desc: "必填：图片配置数组，每个对象为{注册名:URL}的键值对" }
         ]
       },

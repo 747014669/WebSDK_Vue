@@ -235,7 +235,14 @@ const selectCommand = (cmd: CommandDef) => {
   Object.keys(currentFormData).forEach(key => delete currentFormData[key]);
   if (cmd.params) {
     cmd.params.forEach(p => {
-      currentFormData[p.key] = p.default !== undefined ? JSON.parse(JSON.stringify(p.default)) : null;
+      if (p.default !== undefined) {
+        // JSON 类型参数转为格式化字符串，其他类型深拷贝
+        currentFormData[p.key] = p.type === 'json' 
+          ? JSON.stringify(p.default, null, 2)
+          : JSON.parse(JSON.stringify(p.default));
+      } else {
+        currentFormData[p.key] = null;
+      }
     });
   }
 };
