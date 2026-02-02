@@ -257,6 +257,30 @@ const formatJson = (key: string) => {
 
 const executeCommand = () => {
   if (!selectedCmd.value) return;
+  
+  // 特殊处理：配置输入绑定(单个) 命令
+  if (selectedCmd.value.name === '配置输入绑定(单个)') {
+    const bindingIndex = parseInt(currentFormData['BindingIndex']);
+    const inputAction = parseInt(currentFormData['InputAction']);
+    const handler = parseInt(currentFormData['Handler']);
+    const priority = parseInt(currentFormData['Priority']);
+    
+    const payload = {
+      Settings: {
+        BindingConfig: {
+          [`Binding_${bindingIndex}`]: {
+            InputAction: inputAction,
+            Handler: handler,
+            Priority: priority
+          }
+        }
+      }
+    };
+    sendToUe(selectedCmd.value.cmd, payload);
+    addLog('TX', `${selectedCmd.value.cmd} ${JSON.stringify(payload)}`);
+    return;
+  }
+  
   const payload: any = {};
   selectedCmd.value.params?.forEach(p => {
     let val = currentFormData[p.key];

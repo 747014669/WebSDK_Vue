@@ -6,35 +6,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
 
 ---
 
-## 命令索引
-
-### 通用命令
-
-1. [getRegisteredSettingTypes](#1-getregisteredsettingtypes---获取已注册的设置类型) - 获取所有已注册的设置类型
-2. [getSettings](#2-getsettings---获取指定设置) - 获取指定类型的设置
-3. [getAllSettings](#3-getallsettings---获取所有设置) - 获取所有设置
-4. [updateSettings](#4-updatesettings---更新完整设置) - 更新指定设置的完整配置
-5. [updateSettingProperty](#5-updatesettingproperty---更新单个属性) - 更新单个属性值
-6. [resetSettings](#6-resetsettings---重置设置) - 重置为默认值
-7. [reloadSettings](#7-reloadsettings---重新加载设置) - 从文件重新加载
-8. [saveSettings](#8-savesettings---保存设置) - 保存到文件
-9. [saveAllSettings](#9-saveallsettings---保存所有设置) - 保存所有设置
-
-### 快捷命令（推荐）
-
-10. [getSystemSettings](#10-getsystemsettings---获取系统设置快捷方式) - 快捷获取系统设置
-11. [updateSystemSettings](#11-updatesystemsettings---更新系统设置快捷方式) - 快捷更新系统设置
-12. [getHandlerSettings](#12-gethandlersettings---获取handler设置快捷方式) - 快捷获取Handler设置
-13. [updateHandlerSettings](#13-updatehandlersettings---更新handler设置快捷方式) - 快捷更新Handler设置
-14. [getWebCoreSettings](#14-getwebcoresettings---获取webcore设置快捷方式) - 快捷获取WebCore设置
-15. [updateWebCoreSettings](#15-updatewebcoresettings---更新webcore设置快捷方式) - 快捷更新WebCore设置
-
-### 地理参考系统命令
-
-16. [initGeoReference](#16-initgeoreference---初始化地理参考系统) - 初始化地理参考系统
-
----
-
 ## 支持的设置类型
 
 ### SystemSettings - 系统设置
@@ -56,8 +27,179 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
 {
   "SystemUnit": "Meters"
 }
-
 ```
+
+---
+
+### HandlerSettings - 输入处理器设置
+
+控制相机输入处理器的行为参数，包括旋转、平移、缩放等交互配置。
+
+#### BaseConfig - 基础配置
+
+| 参数 | 类型 | 默认值 | 取值范围 | 描述 |
+|---|---|---|---|---|
+| RaycastDistance | Float | `9999999.0` | > 0 | 射线检测的最大距离（厘米）。用于场景交互拾取。 |
+| TraceChannel | Integer | `0` | UE碰撞通道 | 射线检测使用的碰撞通道（0=ECC_Visibility）。 |
+| DefaultAnchorDistance | Float | `1000.0` | 1000.0 - 10000000.0 | 未击中物体时的默认锚点距离（厘米）。 |
+| bShowAnchorVisual | Boolean | `true` | true/false | 是否显示锚点视觉标记。 |
+
+#### RotateConfig - 旋转配置
+
+| 参数 | 类型 | 默认值 | 取值范围 | 描述 |
+|---|---|---|---|---|
+| RotationSpeed | Float | `5` | 0.1 - 50.0 | 旋转速度倍率。值越大，旋转越快。 |
+| RotationSmoothTime | Float | `0.15` | 0.05 - 1.0 | 旋转平滑时间（秒）。值越大越丝滑，但响应越慢。 |
+| MaxPitchAngle | Float | `85.0` | -90.0 - 90.0 | 最大俯仰角（度）。限制相机向上旋转的角度。 |
+| MinPitchAngle | Float | `-85.0` | -90.0 - 90.0 | 最小俯仰角（度）。限制相机向下旋转的角度。 |
+| bInvert | Boolean | `false` | true/false | 是否反转Yaw和Pitch轴的旋转方向。 |
+
+#### PanConfig - 平移配置
+
+| 参数 | 类型 | 默认值 | 取值范围 | 描述 |
+|---|---|---|---|---|
+| PanSpeed | Float | `1.0` | 0.1 - 10.0 | 平移速度倍率。值越大，平移越快。 |
+| PanDragSmoothTime | Float | `0.05` | 0.01 - 0.2 | 拖拽时平滑时间（秒）。值越小越跟手。 |
+| PanSmoothTime | Float | `0.4` | 0.1 - 2.0 | 惯性滑动平滑时间（秒）。松手后惯性滑动的持续时间。 |
+| InertiaVelocityDecayFactor | Float | `0.5` | 0.1 - 1.0 | 惯性速度衰减因子。控制松手后滑动距离，值越小滑动越短。 |
+| MinCachedDistance | Float | `100.0` | 10.0 - 1000.0 | 最小缓存距离（厘米）。防止距离过小导致计算错误。 |
+| bInvertDirection | Boolean | `false` | true/false | 是否反转平移方向。 |
+
+#### ZoomConfig - 缩放配置
+
+| 参数 | 类型 | 默认值 | 取值范围 | 描述 |
+|---|---|---|---|---|
+| ZoomScaleFactor | Float | `0.75` | 0.5 - 0.95 | 缩放比例因子。每次滚轮的缩放比例（0.75 表示缩小到 75%）。 |
+| ZoomSmoothTime | Float | `0.3` | 0.1 - 1.0 | 缩放平滑时间（秒）。值越大越丝滑。 |
+| MinZoomStep | Float | `50.0` | 10.0 - 500.0 | 最小缩放步进（厘米）。确保短距离时也有足够的缩放响应。 |
+| ZoomAnchorHideDelay | Float | `0.5` | 0.1 - 2.0 | 锚点隐藏延迟（秒）。滚轮停止后多久隐藏锚点。 |
+| MinDistance | Float | `10.0` | > 0 | 最小缩放距离（厘米）。相机距离目标的最近距离。 |
+| MaxDistance | Float | `9500000.0` | > MinDistance | 最大缩放距离（厘米）。相机距离目标的最远距离。 |
+
+#### BindingConfig - 输入绑定配置
+
+控制输入动作与Handler的绑定关系，支持动态配置相机操作方式。
+
+**输入动作类型 (InputAction)**:
+
+| 值 | 中文名称 | 描述 |
+|---|---|---|
+| 0 | 无 | 不绑定任何动作 |
+| 1 | 左键轻击 | 鼠标左键单击 |
+| 2 | 左键长按 | 鼠标左键按住拖动 |
+| 3 | 左键双击 | 鼠标左键双击 |
+| 4 | 右键轻击 | 鼠标右键单击 |
+| 5 | 右键长按 | 鼠标右键按住拖动 |
+| 6 | 右键双击 | 鼠标右键双击 |
+| 7 | 鼠标移动 | 鼠标移动事件 |
+| 8 | 鼠标滚轮 | 鼠标滚轮滚动 |
+
+**Handler类型 (Handler)**:
+
+| 值 | 中文名称 | 描述 |
+|---|---|---|
+| 0 | 无 | 不绑定Handler |
+| 1 | 平移 | PanHandler - 相机平移操作 |
+| 2 | 旋转 | RotateHandler - 相机旋转操作 |
+| 3 | 缩放 | ZoomHandler - 相机缩放操作 |
+
+**优先级 (Priority)**:
+
+| 值 | 名称 | 描述 |
+|---|---|---|
+| 0 | Low | 低优先级 |
+| 1 | Normal | 普通优先级（默认） |
+| 2 | High | 高优先级 |
+| 3 | Critical | 关键优先级 |
+
+**默认绑定配置**:
+
+| 输入动作 | Handler | 优先级 | 说明 |
+|---|---|---|---|
+| 左键长按 (2) | 平移 (1) | Normal (1) | 按住左键拖动进行平移 |
+| 右键长按 (5) | 旋转 (2) | Normal (1) | 按住右键拖动进行旋转 |
+| 鼠标滚轮 (8) | 缩放 (3) | Normal (1) | 滚动滚轮进行缩放 |
+
+**完整配置示例**:
+
+```json
+{
+  "BaseConfig": {
+    "RaycastDistance": 9999999.0,
+    "TraceChannel": 0,
+    "DefaultAnchorDistance": 1000.0,
+    "bShowAnchorVisual": true
+  },
+  "RotateConfig": {
+    "RotationSpeed": 0.5,
+    "RotationSmoothTime": 0.15,
+    "MaxPitchAngle": 85.0,
+    "MinPitchAngle": -85.0,
+    "bInvert": false
+  },
+  "PanConfig": {
+    "PanSpeed": 1.0,
+    "PanDragSmoothTime": 0.05,
+    "PanSmoothTime": 0.4,
+    "InertiaVelocityDecayFactor": 0.5,
+    "MinCachedDistance": 100.0,
+    "bInvertDirection": false
+  },
+  "ZoomConfig": {
+    "ZoomScaleFactor": 0.75,
+    "ZoomSmoothTime": 0.3,
+    "MinZoomStep": 50.0,
+    "ZoomAnchorHideDelay": 0.5,
+    "MinDistance": 10.0,
+    "MaxDistance": 9500000.0
+  },
+  "BindingConfig": {
+    "Count": 3,
+    "Binding_0": {
+      "InputAction": 2,
+      "Handler": 1,
+      "Priority": 1
+    },
+    "Binding_1": {
+      "InputAction": 5,
+      "Handler": 2,
+      "Priority": 1
+    },
+    "Binding_2": {
+      "InputAction": 8,
+      "Handler": 3,
+      "Priority": 1
+    }
+  }
+}
+```
+
+**自定义绑定示例 - 交换左右键操作**:
+
+```json
+{
+  "BindingConfig": {
+    "Count": 3,
+    "Binding_0": {
+      "InputAction": 2,
+      "Handler": 2,
+      "Priority": 1
+    },
+    "Binding_1": {
+      "InputAction": 5,
+      "Handler": 1,
+      "Priority": 1
+    },
+    "Binding_2": {
+      "InputAction": 8,
+      "Handler": 3,
+      "Priority": 1
+    }
+  }
+}
+```
+
+上述配置将左键长按改为旋转，右键长按改为平移。
 
 ---
 
@@ -128,7 +270,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     }
   ]
 }
-
 ```
 
 ##### 漫游 Actor 配置
@@ -155,13 +296,24 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     {
       "TypeName": "Default",
       "ActorClassPath": "/WebCore/Res/PathTracer/BP_DefaultTracer.BP_DefaultTracer_C"
+    },
+    {
+      "TypeName": "SplineMesh",
+      "ActorClassPath": "/WebCore/Res/PathTracer/BP_SplineMeshTracer.BP_SplineMeshTracer_C"
+    },
+    {
+      "TypeName": "SegmentedColor",
+      "ActorClassPath": "/WebCore/Res/PathTracer/BP_SegmentColorTracer.BP_SegmentColorTracer_C"
+    },
+    {
+      "TypeName": "ColorCurve",
+      "ActorClassPath": "/WebCore/Res/PathTracer/BP_ColorCurveTracer.BP_ColorCurveTracer_C"
     }
   ],
   "FlyActorClassPath": "/Game/Blueprints/BP_FlyPawn.BP_FlyPawn_C",
   "VehicleActorClassPath": "/Game/Blueprints/BP_Vehicle.BP_Vehicle_C",
   "CharacterActorClassPath": "/Game/Blueprints/BP_Character.BP_Character_C"
 }
-
 ```
 
 **使用场景**:
@@ -171,194 +323,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
 - 支持不同地区的坐标系统
 - 配置可用的路径类型
 - 自定义漫游 Actor
-
----
-
-### HandlerSettings - 输入处理器设置
-
-控制相机输入处理器的行为参数，包括旋转、平移、缩放等交互配置。
-
-#### BaseConfig - 基础配置
-
-| 参数 | 类型 | 默认值 | 取值范围 | 描述 |
-|---|---|---|---|---|
-| RaycastDistance | Float | `9999999.0` | > 0 | 射线检测的最大距离（UE单位）。用于场景交互拾取。 |
-| TraceChannel | String | `"ECC_Visibility"` | UE碰撞通道 | 射线检测使用的碰撞通道。 |
-
-#### RotateConfig - 旋转配置
-
-| 参数 | 类型 | 默认值 | 取值范围 | 描述 |
-|---|---|---|---|---|
-| RotationSpeed | Float | `15.0` | 0.1 - 10.0 | 旋转速度倍率。值越大，旋转越快。 |
-| MaxPitchAngle | Float | `85.0` | -90.0 - 90.0 | 最大俯仰角（度）。限制相机向上旋转的角度。 |
-| MinPitchAngle | Float | `-85.0` | -90.0 - 90.0 | 最小俯仰角（度）。限制相机向下旋转的角度。 |
-| bInvert | Boolean | `false` | true/false | 是否反转Yaw和Pitch轴的旋转方向。 |
-| bEnableCollision | Boolean | `false` | true/false | 是否启用旋转时的碰撞检测。 |
-| LagSpeed | Float | `6.0` | 1.0 - 20.0 | 平滑过渡滞后速度。值越大，过渡越快。 |
-
-#### PanConfig - 平移配置
-
-| 参数 | 类型 | 默认值 | 取值范围 | 描述 |
-|---|---|---|---|---|
-| PanSpeed | Float | `0.8` | 0.1 - 10.0 | 平移速度倍率。值越大，平移越快。 |
-| bInvertDirection | Boolean | `false` | true/false | 是否反转平移方向。 |
-| LagSpeed | Float | `8.0` | 1.0 - 20.0 | 平滑过渡滞后速度。值越大，过渡越快。 |
-
-#### ZoomConfig - 缩放配置
-
-| 参数 | 类型 | 默认值 | 取值范围 | 描述 |
-|---|---|---|---|---|
-| ZoomSpeed | Float | `3.5` | 0.1 - 10.0 | 缩放速度倍率。值越大，缩放越快。 |
-| MinDistance | Float | `50.0` | > 0 | 最小缩放距离（UE单位）。相机距离目标的最近距离。 |
-| MaxDistance | Float | `950000.0` | > MinDistance | 最大缩放距离（UE单位）。相机距离目标的最远距离。 |
-| LagSpeed | Float | `10.0` | 1.0 - 20.0 | 平滑过渡滞后速度。值越大，过渡越快。 |
-
-#### BindingConfig - 输入绑定配置 (新增)
-
-控制输入动作与Handler的绑定关系，支持动态配置相机操作方式。
-
-**输入动作类型 (InputAction)**:
-
-| 值 | 中文名称 | 描述 |
-|---|---|---|
-| 0 | 无 | 不绑定任何动作 |
-| 1 | 左键轻击 | 鼠标左键单击 |
-| 2 | 左键长按 | 鼠标左键按住拖动 |
-| 3 | 左键双击 | 鼠标左键双击 |
-| 4 | 右键轻击 | 鼠标右键单击 |
-| 5 | 右键长按 | 鼠标右键按住拖动 |
-| 6 | 右键双击 | 鼠标右键双击 |
-| 7 | 鼠标移动 | 鼠标移动事件 |
-| 8 | 鼠标滚轮 | 鼠标滚轮滚动 |
-
-**Handler类型 (Handler)**:
-
-| 值 | 中文名称 | 描述 |
-|---|---|---|
-| 0 | 无 | 不绑定Handler |
-| 1 | 平移 | PanHandler - 相机平移操作 |
-| 2 | 旋转 | RotateHandler - 相机旋转操作 |
-| 3 | 缩放 | ZoomHandler - 相机缩放操作 |
-
-**优先级 (Priority)**:
-
-| 值 | 名称 | 描述 |
-|---|---|---|
-| 0 | Low | 低优先级 |
-| 1 | Normal | 普通优先级（默认） |
-| 2 | High | 高优先级 |
-| 3 | Critical | 关键优先级 |
-
-**默认绑定配置**:
-
-| 输入动作 | Handler | 优先级 | 说明 |
-|---|---|---|---|
-| 左键长按 (2) | 平移 (1) | Normal (1) | 按住左键拖动进行平移 |
-| 右键长按 (5) | 旋转 (2) | Normal (1) | 按住右键拖动进行旋转 |
-| 鼠标滚轮 (8) | 缩放 (3) | Normal (1) | 滚动滚轮进行缩放 |
-
-**绑定配置示例**:
-
-```json
-{
-  "BindingConfig": {
-    "Count": 3,
-    "Binding_0": {
-      "InputAction": 2,
-      "Handler": 1,
-      "Priority": 1
-    },
-    "Binding_1": {
-      "InputAction": 5,
-      "Handler": 2,
-      "Priority": 1
-    },
-    "Binding_2": {
-      "InputAction": 8,
-      "Handler": 3,
-      "Priority": 1
-    }
-  }
-}
-
-```
-
-**自定义绑定示例 - 交换左右键操作**:
-
-```json
-{
-  "BindingConfig": {
-    "Count": 3,
-    "Binding_0": {
-      "InputAction": 2,
-      "Handler": 2,
-      "Priority": 1
-    },
-    "Binding_1": {
-      "InputAction": 5,
-      "Handler": 1,
-      "Priority": 1
-    },
-    "Binding_2": {
-      "InputAction": 8,
-      "Handler": 3,
-      "Priority": 1
-    }
-  }
-}
-
-```
-
-上述配置将左键长按改为旋转，右键长按改为平移。
-
-**完整配置示例**:
-
-```json
-{
-  "BaseConfig": {
-    "RaycastDistance": 9999999.0,
-    "TraceChannel": 0
-  },
-  "RotateConfig": {
-    "RotationSpeed": 15.0,
-    "MaxPitchAngle": 85.0,
-    "MinPitchAngle": -85.0,
-    "bInvert": false,
-    "bEnableCollision": false,
-    "LagSpeed": 6.0
-  },
-  "PanConfig": {
-    "PanSpeed": 0.8,
-    "bInvertDirection": false,
-    "LagSpeed": 8.0
-  },
-  "ZoomConfig": {
-    "ZoomSpeed": 3.5,
-    "MinDistance": 50.0,
-    "MaxDistance": 950000.0,
-    "LagSpeed": 10.0
-  },
-  "BindingConfig": {
-    "Count": 3,
-    "Binding_0": {
-      "InputAction": 2,
-      "Handler": 1,
-      "Priority": 1
-    },
-    "Binding_1": {
-      "InputAction": 5,
-      "Handler": 2,
-      "Priority": 1
-    },
-    "Binding_2": {
-      "InputAction": 8,
-      "Handler": 3,
-      "Priority": 1
-    }
-  }
-}
-
-```
 
 ---
 
@@ -379,7 +343,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "CMD": "/settingsManager/getRegisteredSettingTypes",
   "Data": {}
 }
-
 ```
 
 **返回示例**:
@@ -393,7 +356,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "WebCoreSettings"
   ]
 }
-
 ```
 
 **使用场景**:
@@ -413,7 +375,7 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
 
 | 参数 | 类型 | 必选 | 描述 |
 |---|---|---|---|
-| SettingType | String | 是 | 设置类型名称，如 `"SystemSettings"`, `"HandlerSettings"`。 |
+| SettingType | String | 是 | 设置类型名称，如 `"SystemSettings"`, `"HandlerSettings"`, `"WebCoreSettings"`。 |
 
 **调用示例**:
 
@@ -424,7 +386,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "SettingType": "SystemSettings"
   }
 }
-
 ```
 
 **返回示例**:
@@ -437,7 +398,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "SystemUnit": "Meters"
   }
 }
-
 ```
 
 **注意点**:
@@ -462,7 +422,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "CMD": "/settingsManager/getAllSettings",
   "Data": {}
 }
-
 ```
 
 **返回示例**:
@@ -477,44 +436,38 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "HandlerSettings": {
       "BaseConfig": {
         "RaycastDistance": 9999999.0,
-        "TraceChannel": 0
+        "TraceChannel": 0,
+        "DefaultAnchorDistance": 1000.0,
+        "bShowAnchorVisual": true
       },
       "RotateConfig": {
-        "RotationSpeed": 15.0,
+        "RotationSpeed": 0.5,
+        "RotationSmoothTime": 0.15,
         "MaxPitchAngle": 85.0,
         "MinPitchAngle": -85.0,
-        "bInvert": false,
-        "bEnableCollision": false,
-        "LagSpeed": 6.0
+        "bInvert": false
       },
       "PanConfig": {
-        "PanSpeed": 0.8,
-        "bInvertDirection": false,
-        "LagSpeed": 8.0
+        "PanSpeed": 1.0,
+        "PanDragSmoothTime": 0.05,
+        "PanSmoothTime": 0.4,
+        "InertiaVelocityDecayFactor": 0.5,
+        "MinCachedDistance": 100.0,
+        "bInvertDirection": false
       },
       "ZoomConfig": {
-        "ZoomSpeed": 3.5,
-        "MinDistance": 50.0,
-        "MaxDistance": 950000.0,
-        "LagSpeed": 10.0
+        "ZoomScaleFactor": 0.75,
+        "ZoomSmoothTime": 0.3,
+        "MinZoomStep": 50.0,
+        "ZoomAnchorHideDelay": 0.5,
+        "MinDistance": 10.0,
+        "MaxDistance": 9500000.0
       },
       "BindingConfig": {
         "Count": 3,
-        "Binding_0": {
-          "InputAction": 2,
-          "Handler": 1,
-          "Priority": 1
-        },
-        "Binding_1": {
-          "InputAction": 5,
-          "Handler": 2,
-          "Priority": 1
-        },
-        "Binding_2": {
-          "InputAction": 8,
-          "Handler": 3,
-          "Priority": 1
-        }
+        "Binding_0": { "InputAction": 2, "Handler": 1, "Priority": 1 },
+        "Binding_1": { "InputAction": 5, "Handler": 2, "Priority": 1 },
+        "Binding_2": { "InputAction": 8, "Handler": 3, "Priority": 1 }
       }
     },
     "WebCoreSettings": {
@@ -526,16 +479,10 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
       "OriginLatitude": 22.516226,
       "OriginLongitude": 113.883095,
       "OriginAltitude": 0.0,
-      "PathTypes": [
-        {
-          "TypeName": "Default",
-          "ActorClassPath": "/WebCore/Res/PathTracer/BP_DefaultTracer.BP_DefaultTracer_C"
-        }
-      ]
+      "PathTypes": [...]
     }
   }
 }
-
 ```
 
 **使用场景**:
@@ -567,16 +514,15 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "SettingType": "HandlerSettings",
     "Settings": {
       "RotateConfig": {
-        "RotationSpeed": 20.0,
+        "RotationSpeed": 0.8,
         "MaxPitchAngle": 80.0
       },
       "PanConfig": {
-        "PanSpeed": 1.0
+        "PanSpeed": 1.5
       }
     }
   }
 }
-
 ```
 
 **返回示例**:
@@ -586,7 +532,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "StatusCode": 20000,
   "Message": "设置更新成功"
 }
-
 ```
 
 **特性**:
@@ -594,7 +539,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
 - ✅ 支持部分更新（只更新提供的字段）
 - ✅ 自动保存到文件
 - ✅ 支持撤销操作
-- ✅ 触发设置变更事件
 
 **注意点**:
 
@@ -633,7 +577,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "PropertyValue": "Centimeters"
   }
 }
-
 ```
 
 **返回示例**:
@@ -643,7 +586,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "StatusCode": 20000,
   "Message": "属性更新成功"
 }
-
 ```
 
 **使用场景**:
@@ -674,7 +616,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "SettingType": "HandlerSettings"
   }
 }
-
 ```
 
 **返回示例**:
@@ -684,14 +625,12 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "StatusCode": 20000,
   "Message": "设置重置成功"
 }
-
 ```
 
 **特性**:
 
 - ✅ 恢复到代码定义的默认值
 - ✅ 自动保存到文件
-- ✅ 支持撤销操作
 
 **注意点**:
 
@@ -721,7 +660,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "SettingType": "SystemSettings"
   }
 }
-
 ```
 
 **返回示例**:
@@ -731,7 +669,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "StatusCode": 20000,
   "Message": "设置重新加载成功"
 }
-
 ```
 
 **使用场景**:
@@ -767,7 +704,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "SettingType": "HandlerSettings"
   }
 }
-
 ```
 
 **返回示例**:
@@ -777,13 +713,7 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "StatusCode": 20000,
   "Message": "设置保存成功"
 }
-
 ```
-
-**注意点**:
-
-- `updateSettings` 和 `resetSettings` 会自动保存。
-- 此命令主要用于手动触发保存的场景。
 
 ---
 
@@ -802,7 +732,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "CMD": "/settingsManager/saveAllSettings",
   "Data": {}
 }
-
 ```
 
 **返回示例**:
@@ -812,7 +741,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "StatusCode": 20000,
   "Message": "所有设置保存成功"
 }
-
 ```
 
 **使用场景**:
@@ -838,7 +766,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "CMD": "/settingsManager/getSystemSettings",
   "Data": {}
 }
-
 ```
 
 **返回示例**:
@@ -850,14 +777,7 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "SystemUnit": "Meters"
   }
 }
-
 ```
-
-**优势**:
-
-- 无需记住设置类型名称
-- 代码更简洁
-- 减少拼写错误
 
 ---
 
@@ -883,7 +803,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     }
   }
 }
-
 ```
 
 **返回示例**:
@@ -893,7 +812,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "StatusCode": 20000,
   "Message": "设置更新成功"
 }
-
 ```
 
 ---
@@ -913,7 +831,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "CMD": "/settingsManager/getHandlerSettings",
   "Data": {}
 }
-
 ```
 
 **返回示例**:
@@ -922,13 +839,43 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
 {
   "StatusCode": 20000,
   "Settings": {
-    "BaseConfig": { ... },
-    "RotateConfig": { ... },
-    "PanConfig": { ... },
-    "ZoomConfig": { ... }
+    "BaseConfig": {
+      "RaycastDistance": 9999999.0,
+      "TraceChannel": 0,
+      "DefaultAnchorDistance": 1000.0,
+      "bShowAnchorVisual": true
+    },
+    "RotateConfig": {
+      "RotationSpeed": 0.5,
+      "RotationSmoothTime": 0.15,
+      "MaxPitchAngle": 85.0,
+      "MinPitchAngle": -85.0,
+      "bInvert": false
+    },
+    "PanConfig": {
+      "PanSpeed": 1.0,
+      "PanDragSmoothTime": 0.05,
+      "PanSmoothTime": 0.4,
+      "InertiaVelocityDecayFactor": 0.5,
+      "MinCachedDistance": 100.0,
+      "bInvertDirection": false
+    },
+    "ZoomConfig": {
+      "ZoomScaleFactor": 0.75,
+      "ZoomSmoothTime": 0.3,
+      "MinZoomStep": 50.0,
+      "ZoomAnchorHideDelay": 0.5,
+      "MinDistance": 10.0,
+      "MaxDistance": 9500000.0
+    },
+    "BindingConfig": {
+      "Count": 3,
+      "Binding_0": { "InputAction": 2, "Handler": 1, "Priority": 1 },
+      "Binding_1": { "InputAction": 5, "Handler": 2, "Priority": 1 },
+      "Binding_2": { "InputAction": 8, "Handler": 3, "Priority": 1 }
+    }
   }
 }
-
 ```
 
 ---
@@ -952,15 +899,14 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "Data": {
     "Settings": {
       "RotateConfig": {
-        "RotationSpeed": 20.0
+        "RotationSpeed": 0.8
       },
       "ZoomConfig": {
-        "ZoomSpeed": 4.0
+        "ZoomScaleFactor": 0.8
       }
     }
   }
 }
-
 ```
 
 **返回示例**:
@@ -970,7 +916,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "StatusCode": 20000,
   "Message": "设置更新成功"
 }
-
 ```
 
 **特性**:
@@ -981,77 +926,65 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
 
 ---
 
-### 14. getWebCoreSettings - 获取WebCore设置（快捷方式）
+### 14. initGeoReference - 初始化地理参考系统
 
 **功能描述**: 
-快捷命令，无需指定 `SettingType` 参数，直接获取WebCore设置（包含地理参考、路径类型和漫游配置）。
+初始化并配置场景中的 GeoReferencingSystem。所有参数均为可选，不提供的参数将使用 WebCoreSettings 中的当前值。该命令会更新 WebCoreSettings 配置并应用到 GeoReferencingSystem。
 
 **参数**:
-无。
+
+| 参数 | 类型 | 必选 | 默认值 | 描述 |
+|---|---|---|---|---|
+| ProjectedCRS | String | 否 | `"EPSG:4547"` | 投影坐标系标识符 |
+| GeographicCRS | String | 否 | `"EPSG:4490"` | 地理坐标系标识符 |
+| OriginLatitude | Double | 否 | `22.516226` | 原点纬度（-90.0 ~ 90.0） |
+| OriginLongitude | Double | 否 | `113.883095` | 原点经度（-180.0 ~ 180.0） |
+| OriginAltitude | Double | 否 | `0.0` | 原点高度（米） |
+| PlanetShape | Integer | 否 | `0` | 星球形状（0=平面, 1=球形） |
+| bOriginAtPlanetCenter | Boolean | 否 | `false` | 原点是否在星球中心 |
+| bOriginLocationInProjectedCRS | Boolean | 否 | `false` | 原点是否使用投影坐标 |
 
 **调用示例**:
 
+使用默认设置初始化：
+
 ```json
 {
-  "CMD": "/settingsManager/getWebCoreSettings",
+  "CMD": "/settingsManager/initGeoReference",
   "Data": {}
 }
-
 ```
 
-**返回示例**:
+自定义部分参数：
 
 ```json
 {
-  "StatusCode": 20000,
-  "Settings": {
-    "PlanetShape": 0,
-    "bOriginAtPlanetCenter": false,
+  "CMD": "/settingsManager/initGeoReference",
+  "Data": {
+    "ProjectedCRS": "EPSG:3857",
+    "GeographicCRS": "EPSG:4326",
+    "OriginLatitude": 39.9042,
+    "OriginLongitude": 116.4074
+  }
+}
+```
+
+完整配置：
+
+```json
+{
+  "CMD": "/settingsManager/initGeoReference",
+  "Data": {
     "ProjectedCRS": "EPSG:4547",
     "GeographicCRS": "EPSG:4490",
-    "bOriginLocationInProjectedCRS": false,
     "OriginLatitude": 22.516226,
     "OriginLongitude": 113.883095,
     "OriginAltitude": 0.0,
-    "PathTypes": [
-      {
-        "TypeName": "Default",
-        "ActorClassPath": "/WebCore/Res/PathTracer/BP_DefaultTracer.BP_DefaultTracer_C"
-      }
-    ]
+    "PlanetShape": 0,
+    "bOriginAtPlanetCenter": false,
+    "bOriginLocationInProjectedCRS": false
   }
 }
-
-```
-
----
-
-### 15. updateWebCoreSettings - 更新WebCore设置（快捷方式）
-
-**功能描述**: 
-快捷命令，无需指定 `SettingType` 参数，直接更新WebCore设置。支持部分更新。
-
-**参数**:
-
-| 参数 | 类型 | 必选 | 描述 |
-|---|---|---|---|
-| Settings | Object | 是 | 要更新的WebCore设置JSON对象。支持部分更新。 |
-
-**调用示例**:
-
-```json
-{
-  "CMD": "/settingsManager/updateWebCoreSettings",
-  "Data": {
-    "Settings": {
-      "ProjectedCRS": "EPSG:3857",
-      "GeographicCRS": "EPSG:4326",
-      "OriginLatitude": 39.9042,
-      "OriginLongitude": 116.4074
-    }
-  }
-}
-
 ```
 
 **返回示例**:
@@ -1059,18 +992,39 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
 ```json
 {
   "StatusCode": 20000,
-  "Message": "设置更新成功"
+  "AppliedSettings": {
+    "ProjectedCRS": "EPSG:3857",
+    "GeographicCRS": "EPSG:4326",
+    "OriginLatitude": 39.9042,
+    "OriginLongitude": 116.4074,
+    "OriginAltitude": 0.0,
+    "PlanetShape": 0,
+    "bOriginAtPlanetCenter": false,
+    "bOriginLocationInProjectedCRS": false
+  }
 }
-
 ```
 
 **特性**:
 
-- ✅ 支持部分更新
-- ✅ 自动保存到文件
-- ✅ 支持撤销操作
-- ✅ 自动验证坐标范围
-- ✅ 更新路径类型后自动重新加载
+- ✅ 所有参数可选
+- ✅ 自动保存配置到文件
+- ✅ 自动创建或更新 GeoReferencingSystem
+- ✅ 返回实际应用的配置
+
+**使用场景**:
+
+- 项目启动时初始化地理坐标系统
+- 动态切换不同地区的坐标配置
+- 设置项目的地理原点
+
+**注意点**:
+
+- 纬度必须在 [-90, 90] 范围内
+- 经度必须在 [-180, 180] 范围内
+- 坐标系字符串不能为空
+- 如果场景中不存在 GeoReferencingSystem，会自动创建
+- 使用 WebCoreSettings 存储配置
 
 ---
 
@@ -1090,7 +1044,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "StatusCode": 40400,
   "Message": "未找到设置类型: InvalidSettings"
 }
-
 ```
 
 ---
@@ -1104,7 +1057,7 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   - 所有设置类（SystemSettings、HandlerSettings、WebCoreSettings 等）共享同一个 JSON 文件
 - **自动保存**: `updateSettings`、`updateSystemSettings`、`updateHandlerSettings` 和 `resetSettings` 会自动保存到文件。
 - **部分更新**: 更新命令支持部分更新，只需提供要修改的字段。
-- **撤销支持**: 更新和重置命令支持撤销操作。
+- **撤销支持**: `updateSystemSettings` 和 `updateHandlerSettings` 命令支持撤销操作。
 - **单位换算**: `SystemSettings` 的单位设置会影响所有长度相关参数的换算。
 - **参数验证**: 系统会验证参数值是否在有效范围内，超出范围会导致操作失败。
 - **线程安全**: 所有命令在游戏线程执行，无需担心并发问题。
@@ -1126,7 +1079,6 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "CMD": "/settingsManager/getAllSettings",
   "Data": {}
 }
-
 ```
 
 ### 快捷更新流程（推荐）
@@ -1137,13 +1089,12 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
   "Data": {
     "Settings": {
       "RotateConfig": {
-        "RotationSpeed": 20.0,
+        "RotationSpeed": 0.8,
         "MaxPitchAngle": 80.0
       }
     }
   }
 }
-
 ```
 
 ### 通用更新流程
@@ -1155,12 +1106,11 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "SettingType": "HandlerSettings",
     "Settings": {
       "ZoomConfig": {
-        "ZoomSpeed": 4.0
+        "ZoomScaleFactor": 0.8
       }
     }
   }
 }
-
 ```
 
 ### 重置流程
@@ -1172,7 +1122,21 @@ Settings Manager 负责注册并执行所有与系统设置相关的Web命令，
     "SettingType": "HandlerSettings"
   }
 }
+```
 
+### 地理参考初始化流程
+```json
+// 初始化地理参考系统（北京坐标）
+{
+  "CMD": "/settingsManager/initGeoReference",
+  "Data": {
+    "ProjectedCRS": "EPSG:4547",
+    "GeographicCRS": "EPSG:4490",
+    "OriginLatitude": 39.9042,
+    "OriginLongitude": 116.4074,
+    "OriginAltitude": 0.0
+  }
+}
 ```
 
 ---
@@ -1207,21 +1171,58 @@ public:
     { 
         return TEXT("MyCustomSettings"); 
     }
-};
+    
+    virtual bool ValidateSettings() const override
+    {
+        return MyFloatValue > 0.0f;
+    }
 
+protected:
+    virtual void SerializeCustomProperties(FJsonLibraryObject& JsonObject) const override
+    {
+        JsonObject.SetFloat(TEXT("MyFloatValue"), MyFloatValue);
+        JsonObject.SetString(TEXT("MyStringValue"), MyStringValue);
+    }
+    
+    virtual bool DeserializeCustomProperties(const FJsonLibraryObject& JsonObject) override
+    {
+        if (JsonObject.HasKey(TEXT("MyFloatValue")))
+        {
+            MyFloatValue = JsonObject.GetFloat(TEXT("MyFloatValue"));
+        }
+        if (JsonObject.HasKey(TEXT("MyStringValue")))
+        {
+            MyStringValue = JsonObject.GetString(TEXT("MyStringValue"));
+        }
+        return true;
+    }
+};
 ```
 
 ### 2. 注册自定义设置
 
-在 `SettingsManagerFactory::RegisterDefaultSettings()` 中添加：
+在模块启动时注册：
 
 ```cpp
-// 注册自定义设置
-if (SettingManager->RegisterSettingsClass(UMyCustomSettings::StaticClass()))
+void FMyModule::StartupModule()
 {
-    WEB_LOG_REGISTER(TEXT("注册自定义设置: MyCustomSettings"));
+    // 延迟注册（等待 WebSettingManager 初始化）
+    FCoreDelegates::OnPostEngineInit.AddLambda([]()
+    {
+        if (UWebSettingManager* SettingManager = UWebSettingManager::Get())
+        {
+            SettingManager->RegisterSettingsClass(UMyCustomSettings::StaticClass());
+        }
+    });
 }
 
+void FMyModule::ShutdownModule()
+{
+    if (UWebSettingManager* SettingManager = UWebSettingManager::Get())
+    {
+        SettingManager->UnregisterSettingsClass(UMyCustomSettings::StaticClass());
+    }
+}
 ```
 
 ### 3. 前端使用
@@ -1246,119 +1247,8 @@ await emitUIInteraction({
     }
   }
 });
-
 ```
 
 ---
 
-### 16. initGeoReference - 初始化地理参考系统
 
-**功能描述**: 
-初始化并配置场景中的 GeoReferencingSystem。所有参数均为可选，不提供的参数将使用 WebCoreSettings 中的当前值。该命令会更新 WebCoreSettings 配置并应用到 GeoReferencingSystem。
-
-**参数**:
-
-| 参数 | 类型 | 必选 | 默认值 | 描述 |
-|---|---|---|---|---|
-| ProjectedCRS | String | 否 | `"EPSG:4547"` | 投影坐标系标识符 |
-| GeographicCRS | String | 否 | `"EPSG:4490"` | 地理坐标系标识符 |
-| OriginLatitude | Double | 否 | `22.516226` | 原点纬度（-90.0 ~ 90.0） |
-| OriginLongitude | Double | 否 | `113.883095` | 原点经度（-180.0 ~ 180.0） |
-| OriginAltitude | Double | 否 | `0.0` | 原点高度（米） |
-| PlanetShape | Integer | 否 | `0` | 星球形状（0=平面, 1=球形） |
-| bOriginAtPlanetCenter | Boolean | 否 | `false` | 原点是否在星球中心 |
-| bOriginLocationInProjectedCRS | Boolean | 否 | `false` | 原点是否使用投影坐标 |
-
-**调用示例**:
-
-使用默认设置初始化：
-
-```json
-{
-  "CMD": "/settingsManager/initGeoReference",
-  "Data": {}
-}
-
-```
-
-自定义部分参数：
-
-```json
-{
-  "CMD": "/settingsManager/initGeoReference",
-  "Data": {
-    "ProjectedCRS": "EPSG:3857",
-    "GeographicCRS": "EPSG:4326",
-    "OriginLatitude": 39.9042,
-    "OriginLongitude": 116.4074
-  }
-}
-
-```
-
-完整配置：
-
-```json
-{
-  "CMD": "/settingsManager/initGeoReference",
-  "Data": {
-    "ProjectedCRS": "EPSG:4547",
-    "GeographicCRS": "EPSG:4490",
-    "OriginLatitude": 22.516226,
-    "OriginLongitude": 113.883095,
-    "OriginAltitude": 0.0,
-    "PlanetShape": 0,
-    "bOriginAtPlanetCenter": false,
-    "bOriginLocationInProjectedCRS": false
-  }
-}
-
-```
-
-**返回示例**:
-
-```json
-{
-  "StatusCode": 20000,
-  "AppliedSettings": {
-    "ProjectedCRS": "EPSG:3857",
-    "GeographicCRS": "EPSG:4326",
-    "OriginLatitude": 39.9042,
-    "OriginLongitude": 116.4074,
-    "OriginAltitude": 0.0,
-    "PlanetShape": 0,
-    "bOriginAtPlanetCenter": false,
-    "bOriginLocationInProjectedCRS": false
-  }
-}
-
-```
-
-**特性**:
-
-- ✅ 所有参数可选
-- ✅ 自动保存配置到文件
-- ✅ 自动创建或更新 GeoReferencingSystem
-- ✅ 返回实际应用的配置
-
-**使用场景**:
-
-- 项目启动时初始化地理坐标系统
-- 动态切换不同地区的坐标配置
-- 设置项目的地理原点
-
-**注意点**:
-
-- 纬度必须在 [-90, 90] 范围内
-- 经度必须在 [-180, 180] 范围内
-- 坐标系字符串不能为空
-- 如果场景中不存在 GeoReferencingSystem，会自动创建
-- 使用 WebCoreSettings 而不是已废弃的 WebGeoSettings
-
----
-
-## 相关文档
-
-- [使用示例](./SettingsManager_Examples.md) - 详细的前端集成示例
-- [快速参考](./SettingsManager_QuickReference.md) - 命令速查表
-- [系统说明](./SettingsManager_README.md) - 完整的系统架构文档

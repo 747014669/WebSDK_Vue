@@ -691,10 +691,16 @@ export const apiSchema: Record<string, ManagerDef> = {
     iconStr: "SM",
     desc: "系统设置、Handler设置、地理参考",
     commands: [
-      { cmd: "/settingsManager/getRegisteredSettingTypes", name: "获取设置类型", params: [] },
+      { 
+        cmd: "/settingsManager/getRegisteredSettingTypes", 
+        name: "获取设置类型", 
+        desc: "获取系统中所有已注册的设置类型名称列表",
+        params: [] 
+      },
       {
         cmd: "/settingsManager/getSettings",
         name: "获取设置",
+        desc: "获取指定类型的完整设置配置",
         params: [
           { key: "SettingType", label: "设置类型", type: "select", default: "SystemSettings",
             options: [
@@ -706,82 +712,330 @@ export const apiSchema: Record<string, ManagerDef> = {
           }
         ]
       },
-      { cmd: "/settingsManager/getAllSettings", name: "获取所有设置", params: [] },
+      { 
+        cmd: "/settingsManager/getAllSettings", 
+        name: "获取所有设置", 
+        desc: "一次性获取所有已注册设置类型的完整配置",
+        params: [] 
+      },
       {
         cmd: "/settingsManager/updateSettings",
-        name: "更新设置",
+        name: "更新设置(通用)",
+        desc: "更新指定设置类型的配置，支持部分更新",
         params: [
-          { key: "SettingType", label: "设置类型", type: "string", default: "SystemSettings", desc: "必填：设置类型名称" },
-          { key: "Settings", label: "设置内容", type: "json", default: {}, desc: "必填：要更新的设置JSON对象，支持部分更新" }
+          { key: "SettingType", label: "设置类型", type: "select", default: "HandlerSettings",
+            options: [
+              { label: "系统设置", value: "SystemSettings" },
+              { label: "Handler设置", value: "HandlerSettings" },
+              { label: "WebCore设置", value: "WebCoreSettings" }
+            ],
+            desc: "必填：设置类型名称"
+          },
+          { key: "Settings", label: "设置内容", type: "json", default: {
+            "RotateConfig": {
+              "RotationSpeed": 0.8,
+              "MaxPitchAngle": 80.0
+            },
+            "PanConfig": {
+              "PanSpeed": 1.5
+            }
+          }, desc: "必填：要更新的设置JSON对象，支持部分更新（只需提供要修改的字段）" }
         ]
       },
       {
         cmd: "/settingsManager/updateSettingProperty",
         name: "更新单个属性",
+        desc: "更新指定设置的单个属性值，适用于只需修改一个参数的场景",
         params: [
-          { key: "SettingType", label: "设置类型", type: "string", default: "SystemSettings", desc: "必填：设置类型名称" },
-          { key: "PropertyPath", label: "属性路径", type: "string", default: "SystemUnit", desc: "必填：属性路径，嵌套属性使用点号分隔" },
-          { key: "PropertyValue", label: "属性值", type: "string", default: "Meters", desc: "必填：属性值（字符串格式）" }
+          { key: "SettingType", label: "设置类型", type: "select", default: "SystemSettings",
+            options: [
+              { label: "系统设置", value: "SystemSettings" },
+              { label: "Handler设置", value: "HandlerSettings" },
+              { label: "WebCore设置", value: "WebCoreSettings" }
+            ],
+            desc: "必填：设置类型名称"
+          },
+          { key: "PropertyPath", label: "属性路径", type: "string", default: "SystemUnit", desc: "必填：属性路径。简单属性直接使用名称如SystemUnit，嵌套属性使用点号分隔如RotateConfig.RotationSpeed" },
+          { key: "PropertyValue", label: "属性值", type: "string", default: "Centimeters", desc: "必填：属性值（字符串格式），系统会自动转换为目标类型" }
         ]
       },
       {
         cmd: "/settingsManager/resetSettings",
         name: "重置设置",
+        desc: "将指定设置重置为代码中定义的默认值",
         params: [
-          { key: "SettingType", label: "设置类型", type: "string", default: "SystemSettings", desc: "必填：设置类型名称" }
+          { key: "SettingType", label: "设置类型", type: "select", default: "HandlerSettings",
+            options: [
+              { label: "系统设置", value: "SystemSettings" },
+              { label: "Handler设置", value: "HandlerSettings" },
+              { label: "WebCore设置", value: "WebCoreSettings" }
+            ],
+            desc: "必填：设置类型名称"
+          }
         ]
       },
       {
         cmd: "/settingsManager/reloadSettings",
         name: "重新加载设置",
+        desc: "从配置文件重新加载指定设置，放弃内存中的所有未保存修改",
         params: [
-          { key: "SettingType", label: "设置类型", type: "string", default: "SystemSettings", desc: "必填：设置类型名称" }
+          { key: "SettingType", label: "设置类型", type: "select", default: "SystemSettings",
+            options: [
+              { label: "系统设置", value: "SystemSettings" },
+              { label: "Handler设置", value: "HandlerSettings" },
+              { label: "WebCore设置", value: "WebCoreSettings" }
+            ],
+            desc: "必填：设置类型名称"
+          }
         ]
       },
       {
         cmd: "/settingsManager/saveSettings",
         name: "保存设置",
+        desc: "手动将指定设置保存到配置文件",
         params: [
-          { key: "SettingType", label: "设置类型", type: "string", default: "SystemSettings", desc: "必填：设置类型名称" }
+          { key: "SettingType", label: "设置类型", type: "select", default: "HandlerSettings",
+            options: [
+              { label: "系统设置", value: "SystemSettings" },
+              { label: "Handler设置", value: "HandlerSettings" },
+              { label: "WebCore设置", value: "WebCoreSettings" }
+            ],
+            desc: "必填：设置类型名称"
+          }
         ]
       },
-      { cmd: "/settingsManager/saveAllSettings", name: "保存所有设置", params: [] },
-      { cmd: "/settingsManager/getSystemSettings", name: "获取系统设置(快捷)", params: [] },
+      { 
+        cmd: "/settingsManager/saveAllSettings", 
+        name: "保存所有设置", 
+        desc: "一次性将所有已注册的设置保存到各自的配置文件",
+        params: [] 
+      },
+      { 
+        cmd: "/settingsManager/getSystemSettings", 
+        name: "获取系统设置(快捷)", 
+        desc: "快捷命令，直接获取系统设置（SystemUnit等）",
+        params: [] 
+      },
       {
         cmd: "/settingsManager/updateSystemSettings",
         name: "更新系统设置(快捷)",
+        desc: "快捷命令，直接更新系统设置",
         params: [
-          { key: "Settings", label: "设置内容", type: "json", default: {"SystemUnit": "Meters"}, desc: "必填：要更新的系统设置JSON对象" }
+          { key: "Settings", label: "设置内容", type: "json", default: {
+            "SystemUnit": "Meters"
+          }, desc: "必填：系统设置。SystemUnit可选值: Meters(1米=100厘米UE单位), Centimeters(1厘米=1厘米UE单位)" }
         ]
       },
-      { cmd: "/settingsManager/getHandlerSettings", name: "获取Handler设置(快捷)", params: [] },
+      { 
+        cmd: "/settingsManager/getHandlerSettings", 
+        name: "获取Handler设置(快捷)", 
+        desc: "快捷命令，直接获取输入处理器设置（旋转、平移、缩放等）",
+        params: [] 
+      },
       {
         cmd: "/settingsManager/updateHandlerSettings",
         name: "更新Handler设置(快捷)",
+        desc: "快捷命令，直接更新Handler设置，支持部分更新。推荐使用下方的分类更新命令",
         params: [
-          { key: "Settings", label: "设置内容", type: "json", default: {}, desc: "必填：要更新的Handler设置JSON对象，支持部分更新" }
+          { key: "Settings", label: "设置内容", type: "json", default: {
+            "RotateConfig": { "RotationSpeed": 0.8 },
+            "ZoomConfig": { "ZoomScaleFactor": 0.8 }
+          }, desc: "必填：Handler设置JSON对象，支持部分更新" }
         ]
       },
-      { cmd: "/settingsManager/getWebCoreSettings", name: "获取WebCore设置(快捷)", params: [] },
+      {
+        cmd: "/settingsManager/updateHandlerSettings",
+        name: "更新基础配置(BaseConfig)",
+        desc: "更新射线检测和锚点相关配置",
+        params: [
+          { key: "Settings", label: "设置内容", type: "json", default: {
+            "BaseConfig": {
+              "RaycastDistance": 9999999.0,
+              "TraceChannel": 0,
+              "DefaultAnchorDistance": 1000.0,
+              "bShowAnchorVisual": true
+            }
+          }, desc: "BaseConfig配置：RaycastDistance(射线检测最大距离,厘米), TraceChannel(碰撞通道,0=Visibility), DefaultAnchorDistance(默认锚点距离,厘米,范围1000-10000000), bShowAnchorVisual(是否显示锚点)" }
+        ]
+      },
+      {
+        cmd: "/settingsManager/updateHandlerSettings",
+        name: "更新旋转配置(RotateConfig)",
+        desc: "更新相机旋转行为参数",
+        params: [
+          { key: "Settings", label: "设置内容", type: "json", default: {
+            "RotateConfig": {
+              "RotationSpeed": 0.5,
+              "RotationSmoothTime": 0.15,
+              "MaxPitchAngle": 85.0,
+              "MinPitchAngle": -85.0,
+              "bInvert": false
+            }
+          }, desc: "RotateConfig配置：RotationSpeed(旋转速度,0.1-10.0), RotationSmoothTime(平滑时间秒,0.05-1.0), MaxPitchAngle(最大俯仰角,-90~90), MinPitchAngle(最小俯仰角,-90~90), bInvert(是否反转)" }
+        ]
+      },
+      {
+        cmd: "/settingsManager/updateHandlerSettings",
+        name: "更新平移配置(PanConfig)",
+        desc: "更新相机平移行为参数",
+        params: [
+          { key: "Settings", label: "设置内容", type: "json", default: {
+            "PanConfig": {
+              "PanSpeed": 1.0,
+              "PanDragSmoothTime": 0.05,
+              "PanSmoothTime": 0.4,
+              "InertiaVelocityDecayFactor": 0.5,
+              "MinCachedDistance": 100.0,
+              "bInvertDirection": false
+            }
+          }, desc: "PanConfig配置：PanSpeed(平移速度,0.1-10.0), PanDragSmoothTime(拖拽平滑秒,0.01-0.2), PanSmoothTime(惯性滑动秒,0.1-2.0), InertiaVelocityDecayFactor(惯性衰减,0.1-1.0), MinCachedDistance(最小缓存距离厘米,10-1000), bInvertDirection(是否反转)" }
+        ]
+      },
+      {
+        cmd: "/settingsManager/updateHandlerSettings",
+        name: "更新缩放配置(ZoomConfig)",
+        desc: "更新相机缩放行为参数",
+        params: [
+          { key: "Settings", label: "设置内容", type: "json", default: {
+            "ZoomConfig": {
+              "ZoomScaleFactor": 0.75,
+              "ZoomSmoothTime": 0.3,
+              "MinZoomStep": 50.0,
+              "ZoomAnchorHideDelay": 0.5,
+              "MinDistance": 10.0,
+              "MaxDistance": 9500000.0
+            }
+          }, desc: "ZoomConfig配置：ZoomScaleFactor(缩放比例,0.5-0.95), ZoomSmoothTime(平滑时间秒,0.1-1.0), MinZoomStep(最小步进厘米,10-500), ZoomAnchorHideDelay(锚点隐藏延迟秒,0.1-2.0), MinDistance(最小距离厘米), MaxDistance(最大距离厘米)" }
+        ]
+      },
+      {
+        cmd: "/settingsManager/updateHandlerSettings",
+        name: "配置输入绑定(单个)",
+        desc: "配置单个鼠标操作与相机Handler的绑定关系。通过BindingIndex指定要修改的绑定槽位(0-2)",
+        params: [
+          { key: "BindingIndex", label: "绑定槽位", type: "select", default: 0,
+            options: [
+              { label: "绑定0 (默认:左键长按→平移)", value: 0 },
+              { label: "绑定1 (默认:右键长按→旋转)", value: 1 },
+              { label: "绑定2 (默认:滚轮→缩放)", value: 2 }
+            ],
+            desc: "必填：要配置的绑定槽位索引"
+          },
+          { key: "InputAction", label: "输入动作", type: "select", default: 2,
+            options: [
+              { label: "无", value: 0 },
+              { label: "左键轻击", value: 1 },
+              { label: "左键长按", value: 2 },
+              { label: "左键双击", value: 3 },
+              { label: "右键轻击", value: 4 },
+              { label: "右键长按", value: 5 },
+              { label: "右键双击", value: 6 },
+              { label: "鼠标移动", value: 7 },
+              { label: "鼠标滚轮", value: 8 }
+            ],
+            desc: "必填：触发操作的鼠标输入类型"
+          },
+          { key: "Handler", label: "相机操作", type: "select", default: 1,
+            options: [
+              { label: "无", value: 0 },
+              { label: "平移 (Pan)", value: 1 },
+              { label: "旋转 (Rotate)", value: 2 },
+              { label: "缩放 (Zoom)", value: 3 }
+            ],
+            desc: "必填：绑定的相机操作类型"
+          },
+          { key: "Priority", label: "优先级", type: "select", default: 1,
+            options: [
+              { label: "低 (Low)", value: 0 },
+              { label: "普通 (Normal)", value: 1 },
+              { label: "高 (High)", value: 2 },
+              { label: "关键 (Critical)", value: 3 }
+            ],
+            desc: "可选：操作优先级，多个操作冲突时高优先级生效"
+          }
+        ]
+      },
+      {
+        cmd: "/settingsManager/updateHandlerSettings",
+        name: "恢复默认输入绑定",
+        desc: "恢复默认配置：左键长按=平移，右键长按=旋转，滚轮=缩放",
+        params: [
+          { key: "Settings", label: "设置内容", type: "json", default: {
+            "BindingConfig": {
+              "Count": 3,
+              "Binding_0": { "InputAction": 2, "Handler": 1, "Priority": 1 },
+              "Binding_1": { "InputAction": 5, "Handler": 2, "Priority": 1 },
+              "Binding_2": { "InputAction": 8, "Handler": 3, "Priority": 1 }
+            }
+          }, desc: "默认绑定配置" }
+        ]
+      },
+      {
+        cmd: "/settingsManager/updateHandlerSettings",
+        name: "交换左右键操作",
+        desc: "快捷配置：左键长按=旋转，右键长按=平移（与默认相反）",
+        params: [
+          { key: "Settings", label: "设置内容", type: "json", default: {
+            "BindingConfig": {
+              "Count": 3,
+              "Binding_0": { "InputAction": 2, "Handler": 2, "Priority": 1 },
+              "Binding_1": { "InputAction": 5, "Handler": 1, "Priority": 1 },
+              "Binding_2": { "InputAction": 8, "Handler": 3, "Priority": 1 }
+            }
+          }, desc: "交换后配置" }
+        ]
+      },
+      { 
+        cmd: "/settingsManager/getWebCoreSettings", 
+        name: "获取WebCore设置(快捷)", 
+        desc: "快捷命令，直接获取WebCore设置（地理参考、路径类型、漫游Actor等）",
+        params: [] 
+      },
       {
         cmd: "/settingsManager/updateWebCoreSettings",
         name: "更新WebCore设置(快捷)",
+        desc: "快捷命令，直接更新WebCore设置，支持部分更新",
         params: [
-          { key: "Settings", label: "设置内容", type: "json", default: {}, desc: "必填：要更新的WebCore设置JSON对象，支持部分更新" }
+          { key: "Settings", label: "设置内容", type: "json", default: {
+            "PlanetShape": 0,
+            "bOriginAtPlanetCenter": false,
+            "ProjectedCRS": "EPSG:4547",
+            "GeographicCRS": "EPSG:4490",
+            "bOriginLocationInProjectedCRS": false,
+            "OriginLatitude": 22.516226,
+            "OriginLongitude": 113.883095,
+            "OriginAltitude": 0.0,
+            "PathTypes": [
+              { "TypeName": "Default", "ActorClassPath": "/WebCore/Res/PathTracer/BP_DefaultTracer.BP_DefaultTracer_C" },
+              { "TypeName": "SplineMesh", "ActorClassPath": "/WebCore/Res/PathTracer/BP_SplineMeshTracer.BP_SplineMeshTracer_C" },
+              { "TypeName": "SegmentedColor", "ActorClassPath": "/WebCore/Res/PathTracer/BP_SegmentColorTracer.BP_SegmentColorTracer_C" },
+              { "TypeName": "ColorCurve", "ActorClassPath": "/WebCore/Res/PathTracer/BP_ColorCurveTracer.BP_ColorCurveTracer_C" }
+            ],
+            "FlyActorClassPath": "/Game/Blueprints/BP_FlyPawn.BP_FlyPawn_C",
+            "VehicleActorClassPath": "/Game/Blueprints/BP_Vehicle.BP_Vehicle_C",
+            "CharacterActorClassPath": "/Game/Blueprints/BP_Character.BP_Character_C"
+          }, desc: "必填：WebCore设置。包含地理参考配置、路径类型配置和漫游Actor配置。支持部分更新" }
         ]
       },
       {
         cmd: "/settingsManager/initGeoReference",
         name: "初始化地理参考",
+        desc: "初始化并配置场景中的GeoReferencingSystem，所有参数均为可选",
         params: [
-          { key: "ProjectedCRS", label: "投影坐标系", type: "string", default: "EPSG:4547", desc: "可选：投影坐标系标识符" },
-          { key: "GeographicCRS", label: "地理坐标系", type: "string", default: "EPSG:4490", desc: "可选：地理坐标系标识符" },
-          { key: "OriginLatitude", label: "原点纬度", type: "float", default: 22.516226, desc: "可选：原点纬度，范围-90到90" },
-          { key: "OriginLongitude", label: "原点经度", type: "float", default: 113.883095, desc: "可选：原点经度，范围-180到180" },
-          { key: "OriginAltitude", label: "原点高度", type: "float", default: 0, unit: "米", desc: "可选：原点高度" },
-          { key: "PlanetShape", label: "星球形状", type: "integer", default: 0, desc: "可选：0=平面地球，1=球形地球" },
-          { key: "bOriginAtPlanetCenter", label: "原点在星球中心", type: "boolean", default: false, desc: "可选：原点是否在星球中心" },
-          { key: "bOriginLocationInProjectedCRS", label: "使用投影坐标", type: "boolean", default: false, desc: "可选：原点是否使用投影坐标" }
+          { key: "ProjectedCRS", label: "投影坐标系", type: "string", default: "EPSG:4547", desc: "可选：投影坐标系标识符。常用: EPSG:4547(CGCS2000中国常用), EPSG:3857(Web Mercator)" },
+          { key: "GeographicCRS", label: "地理坐标系", type: "string", default: "EPSG:4490", desc: "可选：地理坐标系标识符。常用: EPSG:4490(中国大地坐标系), EPSG:4326(WGS84全球通用)" },
+          { key: "OriginLatitude", label: "原点纬度", type: "float", default: 22.516226, desc: "可选：原点纬度（度），范围-90.0~90.0" },
+          { key: "OriginLongitude", label: "原点经度", type: "float", default: 113.883095, desc: "可选：原点经度（度），范围-180.0~180.0" },
+          { key: "OriginAltitude", label: "原点高度", type: "float", default: 0.0, unit: "米", desc: "可选：原点高度（米）" },
+          { key: "PlanetShape", label: "星球形状", type: "select", default: 0,
+            options: [
+              { label: "平面地球", value: 0 },
+              { label: "球形地球", value: 1 }
+            ],
+            desc: "可选：星球形状类型，影响坐标转换算法"
+          },
+          { key: "bOriginAtPlanetCenter", label: "原点在星球中心", type: "boolean", default: false, desc: "可选：原点是否在星球中心，仅在PlanetShape=1时有效" },
+          { key: "bOriginLocationInProjectedCRS", label: "使用投影坐标", type: "boolean", default: false, desc: "可选：原点位置是否使用投影坐标系表示" }
         ]
       }
     ]
