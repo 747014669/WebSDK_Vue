@@ -686,6 +686,114 @@ export const apiSchema: Record<string, ManagerDef> = {
     ]
   },
 
+  BIMExplode: {
+    title: "BIM爆炸展开",
+    iconStr: "BE",
+    desc: "BIM分层展开、抽屉拉出、爆炸效果",
+    commands: [
+      {
+        cmd: "/bimExplode/SetLayerExpanded",
+        name: "分层展开",
+        desc: "将建筑按楼层分层展开或收起，首次调用自动初始化",
+        params: [
+          { key: "TagPrefix", label: "建筑标识", type: "string", default: "感染性疾病科", desc: "必填：建筑Tag前缀" },
+          { key: "bExpand", label: "是否展开", type: "boolean", default: true, desc: "可选：true=展开，false=收起" },
+          { key: "LayerSpacing", label: "层间距", type: "float", default: 30, unit: "米", desc: "可选：楼层之间的间距" },
+          { key: "Duration", label: "动画时长", type: "float", default: 1, unit: "秒", desc: "可选：动画过渡时长" }
+        ]
+      },
+      {
+        cmd: "/bimExplode/PullDrawer",
+        name: "拉出抽屉",
+        desc: "将指定楼层像抽屉一样拉出",
+        params: [
+          { key: "TagPrefix", label: "建筑标识", type: "string", default: "感染性疾病科", desc: "必填：建筑Tag前缀" },
+          { key: "FloorId", label: "楼层ID", type: "string", default: "2F", desc: "必填：楼层标识，如B1、1F、2F、RF" },
+          { key: "Direction", label: "拉出方向", type: "json", default: [1, 0], desc: "可选：拉出方向[x, y]" },
+          { key: "Distance", label: "拉出距离", type: "float", default: 30.0, unit: "米", desc: "可选：拉出距离" },
+          { key: "Duration", label: "动画时长", type: "float", default: 1, unit: "秒", desc: "可选：动画过渡时长" }
+        ]
+      },
+      {
+        cmd: "/bimExplode/PushDrawer",
+        name: "收回抽屉",
+        desc: "将拉出的楼层收回原位",
+        params: [
+          { key: "TagPrefix", label: "建筑标识", type: "string", default: "感染性疾病科", desc: "必填：建筑Tag前缀" },
+          { key: "FloorId", label: "楼层ID", type: "string", default: "2F", desc: "可选：楼层标识，为空则收回所有楼层" },
+          { key: "Duration", label: "动画时长", type: "float", default: 1, unit: "秒", desc: "可选：动画过渡时长" }
+        ]
+      },
+      {
+        cmd: "/bimExplode/SetExplodeFactor",
+        name: "爆炸展开",
+        desc: "设置建筑的爆炸系数，实现爆炸效果",
+        params: [
+          { key: "TagPrefix", label: "建筑标识", type: "string", default: "感染性疾病科", desc: "必填：建筑Tag前缀" },
+          { key: "Factor", label: "爆炸系数", type: "float", default: 1.0, desc: "可选：爆炸系数，0=收起，1=完全展开" },
+          { key: "Duration", label: "动画时长", type: "float", default: 1.0, unit: "秒", desc: "可选：动画过渡时长" },
+          { key: "bUseCustomCenter", label: "自定义中心", type: "boolean", default: false, desc: "可选：是否使用自定义爆炸中心，false则自动计算" },
+          { key: "Center", label: "爆炸中心", type: "vector3", default: [0, 0, 0], unit: "米", desc: "可选：爆炸中心坐标（仅当自定义中心=true时生效）" }
+        ]
+      },
+      {
+        cmd: "/bimExplode/GetFloorList",
+        name: "获取楼层列表",
+        desc: "获取指定建筑的楼层信息列表",
+        params: [
+          { key: "TagPrefix", label: "建筑标识", type: "string", default: "感染性疾病科", desc: "必填：建筑Tag前缀" }
+        ]
+      },
+      {
+        cmd: "/bimExplode/GetInitializedList",
+        name: "获取已初始化建筑",
+        desc: "获取所有已初始化的建筑列表",
+        params: []
+      },
+      {
+        cmd: "/bimExplode/Reset",
+        name: "重置建筑",
+        desc: "重置指定建筑到初始状态",
+        params: [
+          { key: "TagPrefix", label: "建筑标识", type: "string", default: "BuildingA", desc: "必填：建筑Tag前缀" },
+          { key: "Duration", label: "动画时长", type: "float", default: 0.5, unit: "秒", desc: "可选：动画过渡时长" }
+        ]
+      },
+      {
+        cmd: "/bimExplode/ResetAll",
+        name: "重置所有建筑",
+        desc: "重置所有建筑到初始状态",
+        params: [
+          { key: "Duration", label: "动画时长", type: "float", default: 0.5, unit: "秒", desc: "可选：动画过渡时长" }
+        ]
+      },
+      {
+        cmd: "/bimExplode/ClearCache",
+        name: "清除建筑缓存",
+        desc: "清除指定建筑的缓存数据",
+        params: [
+          { key: "TagPrefix", label: "建筑标识", type: "string", default: "BuildingA", desc: "必填：建筑Tag前缀" }
+        ]
+      },
+      {
+        cmd: "/bimExplode/ClearAllCache",
+        name: "清除所有缓存",
+        desc: "清除所有建筑的缓存数据",
+        params: []
+      },
+      {
+        cmd: "/bimExplode/FlyToFloorViewPoint",
+        name: "飞到楼层观察点",
+        desc: "相机飞到指定楼层的最佳观察位置",
+        params: [
+          { key: "TagPrefix", label: "建筑标识", type: "string", default: "BuildingA", desc: "必填：建筑Tag前缀" },
+          { key: "FloorId", label: "楼层ID", type: "string", default: "2F", desc: "必填：楼层标识" },
+          { key: "Duration", label: "飞行时长", type: "float", default: 1.0, unit: "秒", desc: "可选：飞行动画时长" }
+        ]
+      }
+    ]
+  },
+
   SettingsManager: {
     title: "设置管理",
     iconStr: "SM",

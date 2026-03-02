@@ -291,6 +291,16 @@ const executeCommand = () => {
     if (p.type === 'integer') val = parseInt(val);
     payload[p.key] = val;
   });
+  
+  // 特殊处理：爆炸展开命令，bUseCustomCenter=false 时不发送 Center 参数
+  if (selectedCmd.value.cmd === '/bimExplode/SetExplodeFactor') {
+    const useCustomCenter = payload.bUseCustomCenter === true || payload.bUseCustomCenter === 'true';
+    if (!useCustomCenter) {
+      delete payload.Center;
+    }
+    delete payload.bUseCustomCenter;
+  }
+  
   sendToUe(selectedCmd.value.cmd, payload);
   addLog('TX', `${selectedCmd.value.cmd} ${JSON.stringify(payload)}`);
 };
